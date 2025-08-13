@@ -1,0 +1,379 @@
+Class & main method
+public class ParkingSystem4 {
+
+
+→ Declares the class that holds your program’s main method.
+
+    public static void main(String[] args) {
+
+
+→ The entry point. The program starts running from here.
+
+Create parking slots (1–8)
+        ParkingSlot[] slots = new ParkingSlot[8];
+
+
+→ Makes an array that can hold 8 ParkingSlot objects.
+
+        for (int i = 0; i < slots.length; i++) {
+
+
+→ Loop through each position in the array (indexes 0 to 7).
+
+            slots[i] = new ParkingSlot(i + 1);
+
+
+→ Create a ParkingSlot with a human-friendly number (1–8) and put it into the array.
+
+        }
+
+
+→ End of the loop.
+
+Input reader + license plate rule
+        Scanner scanner = new Scanner(System.in);
+
+
+→ Creates a scanner to read user input from the keyboard.
+
+        Pattern licensePattern = Pattern.compile("^[A-Z]{2}\\d{2}[A-Z]{2}\\d{4}$"); // Example: TN01AB1234
+
+
+→ Compiles a regex to validate license plates like TN01AB1234.
+
+Greeting
+        System.out.println(" Welcome to the Parking System ");
+
+
+→ Prints the welcome message.
+
+Menu loop (runs until user exits)
+        while (true) {
+
+
+→ Start an infinite loop to keep showing the menu.
+
+            System.out.println("\nChoose an option:");
+            System.out.println("1. Park a vehicle");
+            System.out.println("2. Check where a vehicle is parked");
+            System.out.println("3. View parking status");
+            System.out.println("4. Remove a vehicle and pay");
+            System.out.println("5. Exit");
+
+
+→ Displays the menu options.
+
+            System.out.print("Enter your choice: ");
+
+
+→ Prompts the user to type a choice.
+
+            String choice = scanner.nextLine();
+
+
+→ Reads the user’s choice as a full line (string).
+
+Handle the chosen option
+            switch (choice) {
+
+
+→ Choose what to do based on the user’s input.
+
+Case "1": Park a vehicle
+                case "1":
+
+
+→ If user chose 1…
+
+                    System.out.println("Choose vehicle type:");
+                    System.out.println("1. Car");
+                    System.out.println("2. Bike");
+                    System.out.print("Enter your choice: ");
+
+
+→ Ask which kind of vehicle.
+
+                    String vehicleTypeChoice = scanner.nextLine();
+
+
+→ Read the vehicle type selection.
+
+                    System.out.print("Enter vehicle license plate: ");
+
+
+→ Ask for the license plate.
+
+                    String plate = scanner.nextLine().toUpperCase();
+
+
+→ Read the plate and convert it to uppercase (so comparisons are consistent).
+
+                    if (!licensePattern.matcher(plate).matches()) {
+                        System.out.println(" Invalid license plate format.");
+                        break;
+                    }
+
+
+→ Check plate format against the regex. If invalid, show error and leave Case 1.
+
+                    Vehicle vehicle;
+
+
+→ Prepare a variable to reference the chosen vehicle.
+
+                    if (vehicleTypeChoice.equals("1")) {
+                        vehicle = new Car(plate);
+                    } else if (vehicleTypeChoice.equals("2")) {
+                        vehicle = new Bike(plate);
+                    } else {
+                        System.out.println(" Invalid vehicle type choice.");
+                        break;
+                    }
+
+
+→ Create a Car or Bike object based on the user’s choice. If neither 1 nor 2, show error and leave Case 1.
+
+                    boolean parked = false;
+
+
+→ Flag to track if we successfully parked somewhere.
+
+                    for (ParkingSlot slot : slots) {
+
+
+→ Loop through all slots.
+
+                        if (!slot.isOccupied()) {
+
+
+→ If this slot is free…
+
+                            slot.parkVehicle(vehicle);
+
+
+→ Park the vehicle in this slot (also stores entry time).
+
+                            parked = true;
+
+
+→ Mark success.
+
+                            break;
+
+
+→ Stop scanning more slots.
+
+                        }
+                    }
+
+
+→ End of loop through slots.
+
+                    if (!parked) {
+                        System.out.println(" Parking is full.");
+                    }
+
+
+→ If we never found a free slot, tell the user parking is full.
+
+                    break;
+
+
+→ End of Case 1.
+
+Case "2": Find where a vehicle is parked
+                case "2":
+
+
+→ If user chose 2…
+
+                    System.out.print("Enter license plate to search: ");
+
+
+→ Ask for the plate to look up.
+
+                    String searchPlate = scanner.nextLine().toUpperCase();
+
+
+→ Read the plate and uppercase it.
+
+                    boolean found = false;
+
+
+→ Track if we find the vehicle.
+
+                    for (ParkingSlot slot : slots) {
+
+
+→ Check every slot.
+
+                        if (slot.isOccupied() && slot.getParkedVehicle().getLicensePlate().equals(searchPlate)) {
+
+
+→ If the slot is occupied and the plate matches…
+
+                            System.out.println(" Vehicle " + searchPlate + " is parked in slot " + slot.getSlotNumber());
+
+
+→ Tell the user the slot number.
+
+                            found = true;
+                            break;
+
+
+→ Mark found and stop searching.
+
+                        }
+                    }
+
+
+→ End of loop.
+
+                    if (!found) {
+                        System.out.println("Vehicle not found in any slot.");
+                    }
+
+
+→ If not found anywhere, inform the user.
+
+                    break;
+
+
+→ End of Case 2.
+
+Case "3": Show full parking status
+                case "3":
+
+
+→ If user chose 3…
+
+                    System.out.println(" Parking Status:");
+
+
+→ Heading text.
+
+                    for (ParkingSlot slot : slots) {
+                        slot.displaySlotInfo();
+                    }
+
+
+→ For each slot, print either vehicle info or “Empty”.
+
+                    break;
+
+
+→ End of Case 3.
+
+Case "4": Remove a vehicle + show bill
+                case "4":
+
+
+→ If user chose 4…
+
+                    System.out.print("Enter license plate to remove: ");
+
+
+→ Ask which vehicle to remove.
+
+                    String removePlate = scanner.nextLine().toUpperCase();
+
+
+→ Read plate and uppercase.
+
+                    boolean removed = false;
+
+
+→ Track if we removed anything.
+
+                    for (ParkingSlot slot : slots) {
+
+
+→ Go through all slots.
+
+                        if (slot.isOccupied() && slot.getParkedVehicle().getLicensePlate().equals(removePlate)) {
+
+
+→ If slot is occupied with a matching plate…
+
+                            slot.removeVehicle();
+
+
+→ Remove it and (inside that method) calculate duration & cost.
+
+                            removed = true;
+                            break;
+
+
+→ Mark success and stop searching.
+
+                        }
+                    }
+
+
+→ End of loop.
+
+                    if (!removed) {
+                        System.out.println("Vehicle not found in any slot.");
+                    }
+
+
+→ If no match, inform the user.
+
+                    break;
+
+
+→ End of Case 4.
+
+Case "5": Exit
+                case "5":
+
+
+→ If user chose 5…
+
+                    System.out.println(" Exiting the system.");
+
+
+→ Say goodbye.
+
+                    scanner.close();
+
+
+→ Close the input scanner (good resource cleanup).
+
+                    return;
+
+
+→ Exit the main method, which ends the program.
+
+Default: Invalid choice
+                default:
+                    System.out.println(" Invalid choice. Please try again.");
+
+
+→ If user typed anything other than 1–5, show an error.
+
+            }
+
+
+→ End of switch.
+
+        }
+
+
+→ End of the infinite while loop.
+
+    }
+}
+
+
+→ End of main and end of class.
+
+Quick mental model
+
+The program loops showing a menu.
+
+For each choice, it either parks, finds, lists, or removes a vehicle.
+
+Data lives in slots[], which represents 8 physical parking spots.
+
+If you want, I can also annotate your original code with inline comments and share that version for you to keep.
